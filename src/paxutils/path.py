@@ -8,10 +8,12 @@ class Path(pathlib.Path):
 
     It adds a path prefix that is either:
     1. `../fichiers/` if this relative folder exists;
-    2. or an absolute `/tmp/pax/{course}/` prefix otherwise.
+    2. `/pax/shared/{course}/{paths}` if this absolute path exists locally;
+    3. or an absolute writeable `/tmp/pax/{course}/` prefix otherwise.
 
-    Moreover, if the path does not exist, it tries to download it from the pAX server,
-    via its static URL.
+    Moreover, if the path does not exist, it tries to download it from the PAX server.
+
+    Otherwise, it behaves as a standard pathlib path.
     """
     _flavour = type(pathlib.Path())._flavour
 
@@ -20,15 +22,19 @@ class Path(pathlib.Path):
             # check for local sibling 'fichiers' folder
             local_path = pathlib.Path('../fichiers')
             if local_path.exists() and local_path.is_dir():
-                # add local relative path prefix
+                # use local relative file path prefix
                 return super(Path, cls).__new__(cls, '../fichiers', *paths)
 
-            else:
-                # add /tmp PAX prefix
-                return super(Path, cls).__new__(cls, '/tmp/pax', course.lower(), *paths)
+            local_path = pathlib.Path('/pax/shared', course.upper(), *paths)
+            if local_path.exists():
+                # use local absolute shared prefix
+                return super(Path, cls).__new__(cls, '/pax/shared', course.upper(), *paths)
+
+            # use local writeable temp prefix
+            return super(Path, cls).__new__(cls, '/tmp/pax', course.lower(), *paths)
 
         else:
-            # assume normal behavior
+            # assume normal pathlib behavior
             return super(Path, cls).__new__(cls, *paths)
 
     def __init__(self, *paths, course: str=None):
