@@ -1,7 +1,7 @@
 import pathlib
 import requests
 
-PAXURL = 'https://pax.ulaval.ca'
+PAX_SERVER_URL = 'https://pax.ulaval.ca'
 
 class Path(pathlib.Path):
     """This class behaves has a PAX replacement for the standard `pathlib.Path`.
@@ -18,43 +18,58 @@ class Path(pathlib.Path):
     _flavour = type(pathlib.Path())._flavour
 
     def __new__(cls, *paths, course: str=None):
-        if course:
+        if course and not pathlib.Path(*paths).is_absolute():
+            # make sure course is uppercase
+            course = course.upper()
+
             # check for local sibling 'fichiers' folder
             local_path = pathlib.Path('../fichiers')
             if local_path.exists() and local_path.is_dir():
                 # use local relative file path prefix
-                return super(Path, cls).__new__(cls, '../fichiers', *paths)
+                self = super(Path, cls).__new__(cls, '../fichiers', *paths)
+                self._path_index = 2
 
-            local_path = pathlib.Path('/pax/shared', course.upper(), *paths)
-            if local_path.exists():
+            elif pathlib.Path('/pax/shared', course, *paths).exists():
                 # use local absolute shared prefix
-                return super(Path, cls).__new__(cls, '/pax/shared', course.upper(), *paths)
+                self = super(Path, cls).__new__(cls, local_path)
+                self._path_index = 4
 
-            # use local writeable temp prefix
-            return super(Path, cls).__new__(cls, '/tmp/pax', course.lower(), *paths)
+            else:
+                # use local writeable temp prefix
+                self = super(Path, cls).__new__(cls, '/tmp/pax', course, *paths)
+                self._path_index = 4
 
         else:
             # assume normal pathlib behavior
-            return super(Path, cls).__new__(cls, *paths)
+            self = super(Path, cls).__new__(cls, *paths)
+            self._path_index = 0
+
+        self._course = course
+
+        return self
 
     def __init__(self, *paths, course: str=None):
         # initialize base path
         super().__init__()
 
-        # save course id
-        self._course = course
-
-        # try to fetch path from the PAX server
+        # try to fetch path from PAX server
         self.fetch_from_pax()
 
     def __truediv__(self, path):
-        # apply inherited operator
-        return Path(super().__truediv__(path))
+        # apply concatenation operator
+        return Path(*self.parts, path, course=self._course)
+
+    def __rtruediv__(self, path):
+        # apply reverse concatenation operator
+        return Path(path, *self.parts[self._path_index:], course=self._course)
 
     def fetch_from_pax(self) -> bool:
-        if self._course and not self.exists():
+        # fetch base user path (without prefix)
+        user_path = pathlib.Path(*self.parts[self._path_index:])
+
+        if self._course and not self.exists() and not user_path.is_absolute():
             # fetch file content from PAX server
-            r = requests.get(f'{PAXURL}/static/{self._course.upper()}/fichiers/{str(self)}')
+            r = requests.get(f'{PAX_SERVER_URL}/static/{self._course}/fichiers/{str(user_path)}')
 
             if r.status_code == 200:
                 # make sure parent exists

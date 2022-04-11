@@ -1,9 +1,12 @@
-from src.paxutils.path import Path
+from paxutils.path import Path
 
 path = Path('narcity.csv', course='GIF-U016')
 print(path, path.exists())
 
 path /= 'toto'
-print(path, type(path))
+print(path, type(path), path._path_index)
 
 print('tata' / path)
+
+path = Path('/narcity.csv', course='GIF-U016')
+print(path, path.exists(), path._path_index)
