@@ -26,12 +26,12 @@ class Path(pathlib.Path):
             local_path = pathlib.Path('../fichiers')
             if local_path.exists() and local_path.is_dir():
                 # use local relative file path prefix
-                self = super(Path, cls).__new__(cls, '../fichiers', *paths)
+                self = super(Path, cls).__new__(cls, local_path, *paths)
                 self._path_index = 2
 
             elif pathlib.Path('/pax/shared', course, *paths).exists():
                 # use local absolute shared prefix
-                self = super(Path, cls).__new__(cls, local_path)
+                self = super(Path, cls).__new__(cls, '/pax/shared')
                 self._path_index = 4
 
             else:
