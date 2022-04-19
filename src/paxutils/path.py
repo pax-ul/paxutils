@@ -23,10 +23,9 @@ class Path(pathlib.Path):
             course = course.upper()
 
             # check for local sibling 'fichiers' folder
-            local_path = pathlib.Path('../fichiers')
-            if local_path.exists() and local_path.is_dir():
+            if pathlib.Path('../fichiers').is_dir():
                 # use local relative file path prefix
-                self = super(Path, cls).__new__(cls, local_path, *paths)
+                self = super(Path, cls).__new__(cls, '../fichiers', *paths)
                 self._path_index = 2
 
             elif pathlib.Path('/pax/shared', course, *paths).exists():
@@ -57,7 +56,7 @@ class Path(pathlib.Path):
 
     def __truediv__(self, path):
         # apply concatenation operator
-        return Path(*self.parts, path, course=self._course)
+        return Path(*self.parts[self._path_index:], path, course=self._course)
 
     def __rtruediv__(self, path):
         # apply reverse concatenation operator
