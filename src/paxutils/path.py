@@ -30,7 +30,7 @@ class Path(pathlib.Path):
 
             elif pathlib.Path('/pax/shared', course, *paths).exists():
                 # use local absolute shared prefix
-                self = super(Path, cls).__new__(cls, '/pax/shared')
+                self = super(Path, cls).__new__(cls, '/pax/shared', course, *paths)
                 self._path_index = 4
 
             else:
