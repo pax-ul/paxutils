@@ -6,9 +6,9 @@ PAX_SERVER_URL = 'https://pax.ulaval.ca'
 class Path(pathlib.Path):
     """This class behaves has a PAX replacement for the standard `pathlib.Path`.
 
-    It adds a path prefix that is either:
-    1. `../fichiers/` if this relative folder exists;
-    2. `/pax/shared/{course}/{paths}` if this absolute path exists locally;
+    If {course} exists and if the specified path is relative, it adds a path prefix:
+    1. `../fichiers/` if this relative folder exists locally;
+    2. `/pax/shared/{course}/` else if this absolute path exists locally;
     3. or an absolute writeable `/tmp/pax/{course}/` prefix otherwise.
 
     Moreover, if the path does not exist, it tries to download it from the PAX server.
@@ -80,3 +80,9 @@ class Path(pathlib.Path):
                 return True
 
         return False
+
+
+if __name__ == '__main__':
+    print(Path('toto', course='GLO-1901'))
+    print(Path('reseau.py', course='GIF-U015'))
+    print(Path('/pax/shared', course='GLO-1901'))
