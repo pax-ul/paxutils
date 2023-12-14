@@ -1,5 +1,6 @@
 import pathlib
 import requests
+from typing_extensions import Self
 
 PAX_SERVER_URL = 'https://pax.ulaval.ca'
 
@@ -18,10 +19,10 @@ class Path(pathlib.Path):
     _flavour = type(pathlib.Path())._flavour
 
     def __new__(cls, *paths, course: str=None):
-        if course and not pathlib.Path(*paths).is_absolute():
-            # make sure course is uppercase
-            course = course.upper()
+        # make sure course is uppercase
+        course = course.upper() if course is not None else course
 
+        if course and not pathlib.Path(*paths).is_absolute():
             # check for local sibling 'fichiers' folder
             if pathlib.Path('../fichiers').is_dir():
                 # use local relative file path prefix
@@ -43,26 +44,41 @@ class Path(pathlib.Path):
             self = super(Path, cls).__new__(cls, *paths)
             self._path_index = 0
 
+        # memorize course argument
         self._course = course
 
         return self
 
-    def __init__(self, *paths, course: str=None):
-        # initialize base path
-        super().__init__()
+    def __truediv__(self, path) -> Self:
+        # check existence of index and course attributes, because some pathlib methods
+        # (e.g. absolute) create new paths without calling the __new__ operator
+        if not hasattr(self, '_path_index'):
+            self._path_index = 0
+        if not hasattr(self, '_course'):
+            self._course = None
 
-        # try to fetch path from PAX server
-        self.fetch_from_pax()
-
-    def __truediv__(self, path):
         # apply concatenation operator
         return Path(*self.parts[self._path_index:], path, course=self._course)
 
-    def __rtruediv__(self, path):
+    def __rtruediv__(self, path) -> Self:
+        # check existence of index and course attributes, because some pathlib methods
+        # (e.g. absolute) create new paths without calling the __new__ operator
+        if not hasattr(self, '_path_index'):
+            self._path_index = 0
+        if not hasattr(self, '_course'):
+            self._course = None
+
         # apply reverse concatenation operator
         return Path(path, *self.parts[self._path_index:], course=self._course)
 
     def fetch_from_pax(self) -> bool:
+        # check existence of index and course attributes, because some pathlib methods
+        # (e.g. absolute) create new paths without calling the __new__ operator
+        if not hasattr(self, '_path_index'):
+            self._path_index = 0
+        if not hasattr(self, '_course'):
+            self._course = None
+
         # fetch base user path (without prefix)
         user_path = pathlib.Path(*self.parts[self._path_index:])
 
@@ -83,6 +99,7 @@ class Path(pathlib.Path):
 
 
 if __name__ == '__main__':
+    print(Path('toto').absolute()/'tata')
     print(Path('toto', course='GLO-1901'))
     print(Path('reseau.py', course='GIF-U015'))
     print(Path('/pax/shared', course='GLO-1901'))
