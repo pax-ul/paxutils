@@ -22,7 +22,7 @@ class Path:
         # make sure course is uppercase
         course = course.upper() if course is not None else None
 
-        if course and not pathlib.Path(*paths).is_absolute():
+        if course is not None and not pathlib.Path(*paths).is_absolute():
             # check for local sibling 'fichiers' folder
             if pathlib.Path('../fichiers').is_dir():
                 # use local relative file path prefix
@@ -47,12 +47,19 @@ class Path:
         # memorize course argument
         self._course = course
 
+        if course and not self.exists():
+            # try to fetch file from pax server
+            self.fetch_from_pax()
+
     def __getattr__(self, name):
         # delegate to pathlib
         return getattr(self._path, name)
 
     def __str__(self) -> str:
         return str(self._path)
+
+    def __repr__(self) -> str:
+        return repr(self._path)
 
     def __truediv__(self, path) -> Self:
         # apply concatenation operator
@@ -63,11 +70,11 @@ class Path:
         return Path(path, *self.parts[self._path_index:], course=self._course)
 
     def fetch_from_pax(self) -> bool:
-        # assume path cannot not be fetched
+        # assume path cannot be fetched
         success = False
 
-        if self._course and not self.is_absolute():
-            # fetch base user path (without path prefix)
+        if self._course and not self.exists():
+            # set base user path (without path prefix)
             user_path = pathlib.Path(*self.parts[self._path_index:])
 
             # fetch file content from PAX server
@@ -86,12 +93,8 @@ class Path:
             else:
                 LOGGER.warning("%d could not fetch %s", r.status_code, url)
 
-        else:
-            if not self._course:
-                LOGGER.warning("a fetchable path must specify a course id")
-
-            if self.is_absolute():
-                LOGGER.warning("a fetchable path must be relative")
+        elif not self._course:
+            LOGGER.warning("404 fetchable path must specify course id")
 
         return success
 

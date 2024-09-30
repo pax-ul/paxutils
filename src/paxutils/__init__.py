@@ -1,3 +1,4 @@
-from .path import Path
+__version__ = '0.2.1'
+__all__ = ['Path']
 
-__version__ = '0.2.0'
+from .path import Path

@@ -1,3 +1,9 @@
+## 0.2.1 (September 29, 2024)
+- Allow empty course string.
+- File fetched automatically from PAX if it doesn't exists locally.
+- Path class automatically imported into paxutils namespace.
+- Added __repr__ method.
+
 ## 0.2.0 (September 9, 2024)
 - New implementation based on delegation instead of inheritance, which is a much cleaner approach given the messy implementation of pathlib. (the previous version did not work with Python 3.12)
 
