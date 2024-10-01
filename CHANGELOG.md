@@ -1,3 +1,6 @@
+## 0.2.2 (October 1, 2024)
+- Added missing dependencies to setup config.
+
 ## 0.2.1 (September 29, 2024)
 - Allow empty course string.
 - File fetched automatically from PAX if it doesn't exists locally.
