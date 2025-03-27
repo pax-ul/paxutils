@@ -58,6 +58,10 @@ class Path:
     def __str__(self) -> str:
         return str(self._path)
 
+    def __fspath__(self):
+        # make os.PathLike
+        return str(self._path)
+
     def __repr__(self) -> str:
         return repr(self._path)
 

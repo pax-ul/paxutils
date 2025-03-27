@@ -13,7 +13,7 @@ path = Path('myfile', course='GIF-U014')
 ```
 
 # build distribution
-python -m build
+uv build
 
 # upload to pypi
-twine upload dist/*
+uv publish

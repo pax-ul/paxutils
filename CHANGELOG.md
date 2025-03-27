@@ -1,3 +1,9 @@
+## 0.3.0 (March 27, 2025)
+- Project configuration using the toml file.
+
+## 0.2.3 (March 26, 2025)
+- Added __fspath__ method to make path class os.PathLike.
+
 ## 0.2.2 (October 1, 2024)
 - Added missing dependencies to setup config.
 
